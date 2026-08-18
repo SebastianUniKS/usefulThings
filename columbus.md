@@ -123,6 +123,50 @@ from log8
 group by date
 
 ```
+### cat-log pipeline
+```
+CREATE TABLE gps_data (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+	date INTEGER,
+	speed FLOAT,
+    time TEXT,
+    long TEXT,
+    lat TEXT
+);
+
+SELECT AddGeometryColumn('gps_data', 'geom', 4326, 'POINT', 'XY')
+
+SELECT *
+--delete 
+FROM gps_data limit 10
+
+INSERT INTO gps_data
+SELECT 
+    id as id,
+	source_file as name,
+	date as date,
+	speed as speed,
+    time,
+    long,
+    lat,
+    makeline(MakePoint(
+        CAST(long as decimal),CAST(lat as decimal), 4326
+    ) as geom
+FROM combined_gps;
+
+
+SELECT name as herd, cast(date as text) as name, MakeLine(geom) as geom
+--delete 
+FROM gps_data 
+group by name, date limit 10
+
+
+select count(*), date from gps_data group by date order by cast(date as date)
+```
+
+
+
 ## infoRange API
 ```
 select 	*, MakePoint(cast(long as decimal), cast(lat as decimal),4326) as geom							
